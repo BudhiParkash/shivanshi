@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shivanshi Tripathi - Frontend Developer Portfolio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            @apply bg-gray-900 text-gray-200;
+        }
+
+        /* Dark mode styles */
+        body.dark {
+            @apply bg-gray-900 text-gray-200;
+        }
+        body.light {
+            @apply bg-gray-100 text-gray-800;
+        }
+
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6b46c1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #805ad5;
+        }
+
+        .section-padding {
+            padding-top: 8rem;
+            padding-bottom: 8rem;
+        }
+
+        /* Hide initially for scroll reveal */
+        .reveal-item {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .reveal-item.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Specific delays for reveal */
+        .reveal-item.delay-1 { transition-delay: 0.1s; }
+        .reveal-item.delay-2 { transition-delay: 0.2s; }
+        .reveal-item.delay-3 { transition-delay: 0.3s; }
+        .reveal-item.delay-4 { transition-delay: 0.4s; }
+        .reveal-item.delay-5 { transition-delay: 0.5s; }
+        .reveal-item.delay-6 { transition-delay: 0.6s; }
+
+        /* Cursor trail dot */
+        .cursor-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #805ad5;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            opacity: 0.7;
+            transition: opacity 0.2s ease-out;
+            box-shadow: 0 0 15px #805ad5, 0 0 30px #805ad5;
+        }
+
+        /* Contact Section Styling */
+        .contact-container {
+            @apply bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm border border-gray-700 max-w-lg mx-auto p-8;
+        }
+
+        .contact-info a:hover {
+            @apply text-purple-400 transform scale-110 transition-all duration-300;
+        }
+
+        .contact-info i {
+            @apply text-purple-600 transition-transform duration-300;
+        }
+
+        .contact-info a:hover i {
+            @apply transform scale-125;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 3rem;
+            margin-bottom: 2rem;
+            @apply border-l-2 border-purple-500;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -0.5rem;
+            top: 0;
+            width: 1rem;
+            height: 1rem;
+            @apply bg-purple-500 rounded-full border-4 border-gray-900 dark:border-gray-900;
+        }
+
+        /* Three.js canvases */
+        #hero-three-container, #skills-three-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        canvas {
+            display: block;
+        }
+
+        /* Keyframes for signature animation */
+        @keyframes drawSignature {
+            0% { stroke-dashoffset: 1000; }
+            100% { stroke-dashoffset: 0; }
+        }
+
+        .signature-svg path {
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawSignature 2s ease-out forwards;
+            animation-delay: 0.5s;
+        }
+
+        /* Project Card Flip Styles */
+        .project-card {
+            perspective: 1000px;
+            height: 380px;
+            @apply transition-transform duration-300 ease-in-out;
+        }
+
+        .project-card:hover {
+            @apply scale-105 shadow-2xl shadow-purple-500/50;
+        }
+
+        .project-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .project-card:hover .project-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .project-card-front, .project-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            @apply shadow-2xl;
+        }
+
+        .project-card-front {
+            @apply bg-gray-700;
+        }
+
+        .project-card-back {
+            @apply bg-gray-700 flex flex-col justify-center items-center text-white p-4;
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="dark">
+    <!-- Cursor Trail -->
+    <div class="cursor-dot hidden md:block"></div>
+
+    <!-- Navigation Header -->
+    <header class="fixed top-0 left-0 w-full z-50 py-4 px-6 bg-gray-900 bg-opacity-80 backdrop-blur-sm shadow-lg rounded-b-xl">
+        <nav class="container mx-auto flex justify-between items-center">
+            <a href="#hero" class="text-2xl font-bold text-purple-500 hover:text-purple-400 transition-colors duration-300">ST</a>
+            <!-- Desktop Navigation -->
+            <ul class="hidden md:flex space-x-6">
+                <li><a href="#about" class="text-gray-300 hover:text-purple-400 transition-colors duration-300 rounded-md py-2 px-3">About</a></li>
+                <li><a href="#skills" class="text-gray-300 hover:text-purple-400 transition-colors duration-300 rounded-md py-2 px-3">Skills</a></li>
+                <li><a href="#projects" class="text-gray-300 hover:text-purple-400 transition-colors duration-300 rounded-md py-2 px-3">Projects</a></li>
+                <li><a href="#experience" class="text-gray-300 hover:text-purple-400 transition-colors duration-300 rounded-md py-2 px-3">Experience</a></li>
+                <li><a href="#contact" class="text-gray-300 hover:text-purple-400 transition-colors duration-300 rounded-md py-2 px-3">Contact</a></li>
+            </ul>
+            <!-- Mobile Menu Button -->
+            <div class="flex items-center md:hidden">
+                <button id="dark-mode-toggle-mobile" class="p-2 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors duration-300 mr-4">
+                    <i class="fas fa-sun block dark:hidden"></i>
+                    <i class="fas fa-moon hidden dark:block"></i>
+                </button>
+                <button id="mobile-menu-button" class="text-gray-300 text-2xl focus:outline-none">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <!-- Desktop Dark Mode Toggle -->
+            <button id="dark-mode-toggle" class="hidden md:block p-2 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors duration-300">
+                <i class="fas fa-sun block dark:hidden"></i>
+                <i class="fas fa-moon hidden dark:block"></i>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Mobile Navigation Overlay -->
+    <div id="mobile-menu" class="fixed top-0 right-0 h-full w-64 bg-gray-900 bg-opacity-95 backdrop-blur-lg z-50 shadow-xl flex flex-col p-8 md:hidden">
+        <button id="close-mobile-menu" class="text-gray-300 text-3xl absolute top-4 right-4 focus:outline-none">
+            <i class="fas fa-times"></i>
+        </button>
+        <ul class="flex flex-col space-y-6 mt-16 text-xl">
+            <li><a href="#about" class="text-gray-300 hover:text-purple-400 transition-colors duration-300 block py-2" data-section="about">About</a></li>
+            <li><a href="#skills" class="text-gray-300 hover:text-purple-400 transition-colors duration-300 block py-2" data-section="skills">Skills</a></li>
+            <li><a href="#projects" class="text-gray-300 hover:text-purple-400 transition-colors duration-300 block py-2" data-section="projects">Projects</a></li>
+            <li><a href="#experience" class="text-gray-300 hover:text-purple-400 transition-colors duration-300 block py-2" data-section="experience">Experience</a></li>
+            <li><a href="#contact" class="text-gray-300 hover:text-purple-400 transition-colors duration-300 block py-2" data-section="contact">Contact</a></li>
+        </ul>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative min-h-screen flex flex-col justify-center items-center text-center overflow-hidden">
+        <div id="hero-three-container"></div>
+        <div class="z-10 p-6 rounded-xl bg-gray-800 bg-opacity-70 backdrop-blur-sm reveal-item">
+            <h1 class="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-4 drop-shadow-lg">
+                Hi, I’m <span class="text-purple-400">Shivanshi Tripathi</span>,
+            </h1>
+            <p class="text-3xl md:text-5xl font-semibold text-gray-300 mb-4 drop-shadow-md">Frontend Developer</p>
+            <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-8">
+                Crafting responsive, user-friendly web interfaces with React.js, JavaScript, and modern frameworks.
+            </p>
+            <a href="#about" class="absolute bottom-10 left-1/2 -translate-x-1/2 text-purple-400 text-4xl animate-bounce">
+                <i class="fas fa-chevron-down"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- About Me Section -->
+    <section id="about" class="section-padding bg-gray-800 text-gray-200">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <h2 class="text-4xl font-bold text-center text-purple-400 mb-12 reveal-item">About Me</h2>
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-12">
+                <div class="md:w-1/3 flex justify-center reveal-item delay-1">
+                    <img src="https://i.ibb.co/vGqnNGG/Whats-App-Image-2025-06-19-at-09-25-01.jpg" alt="Shivanshi Tripathi" class="rounded-full shadow-2xl border-4 border-purple-500 w-48 h-48 object-cover transform hover:scale-105 transition-transform duration-300 ease-in-out">
+                </div>
+                <div class="md:w-2/3 text-lg text-gray-300 leading-relaxed reveal-item delay-2">
+                    <p class="mb-6">
+                        Hello! I'm Shivanshi Tripathi, a results-driven Frontend Developer with a passion for building responsive, user-friendly web applications. I specialize in <strong class="text-purple-400">React.js</strong>, <strong class="text-purple-400">JavaScript</strong>, <strong class="text-purple-400">HTML5</strong>, and <strong class="text-purple-400">CSS3</strong>, creating dynamic UIs and integrating APIs to enhance functionality.
+                    </p>
+                    <p class="mb-6">
+                        With experience at Shunya Ekai Technologies, I’ve designed and developed SEO-friendly websites, dynamic admin dashboards, and user-centric interfaces. I thrive on translating designs into clean, maintainable code, ensuring cross-browser compatibility and optimal performance through thorough manual testing.
+                    </p>
+                    <p class="mb-6">
+                        I hold a Bachelor of Technology from Rajasthan Technical University (2016-2020) and certifications in Cloud Computing and Website Designing. My goal is to deliver high-quality, scalable web solutions that drive engagement and meet business needs.
+                    </p>
+                </div>
+            </div>
+            <!-- Timeline -->
+            <div class="mt-20">
+                <h3 class="text-3xl font-bold text-center text-purple-400 mb-10 reveal-item">My Journey</h3>
+                <div class="relative max-w-2xl mx-auto">
+                    <div class="timeline-item reveal-item delay-3">
+                        <h4 class="text-xl font-semibold text-white mb-1">B.Tech in Computer Science</h4>
+                        <p class="text-gray-400 text-sm mb-2">2016 - 2020</p>
+                        <p class="text-gray-300">Earned a Bachelor of Technology from Rajasthan Technical University, building a strong foundation in programming and web technologies.</p>
+                    </div>
+                    <div class="timeline-item reveal-item delay-4">
+                        <h4 class="text-xl font-semibold text-white mb-1">First Frontend Role</h4>
+                        <p class="text-gray-400 text-sm mb-2">2022</p>
+                        <p class="text-gray-300">Joined Shunya Ekai Technologies as a Frontend Developer, working on responsive websites and admin panels.</p>
+                    </div>
+                    <div class="timeline-item reveal-item delay-5">
+                        <h4 class="text-xl font-semibold text-white mb-1">Certifications</h4>
+                        <p class="text-gray-400 text-sm mb-2">2022</p>
+                        <p class="text-gray-300">Completed certified courses in Cloud Computing and Website Designing, enhancing my technical expertise.</p>
+                    </div>
+                    <div class="timeline-item reveal-item delay-6">
+                        <h4 class="text-xl font-semibold text-white mb-1">Present</h4>
+                        <p class="text-gray-400 text-sm mb-2">2025</p>
+                        <p class="text-gray-300">Continuing to develop innovative web solutions, exploring advanced frontend frameworks and UI/UX trends.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="section-padding bg-gray-900 text-gray-200 relative overflow-hidden">
+        <div id="skills-three-container"></div>
+        <div class="container mx-auto px-6 max-w-5xl relative z-10">
+            <h2 class="text-4xl font-bold text-center text-purple-400 mb-12 reveal-item">My Skills</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 reveal-item delay-1">
+                <div class="skill-card bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl hover:scale-105 transform transition-all duration-300 ease-in-out reveal-item delay-2">
+                    <i class="fab fa-html5 text-5xl text-orange-500 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white">HTML5</h3>
+                </div>
+                <div class="skill-card bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl hover:scale-105 transform transition-all duration-300 ease-in-out reveal-item delay-3">
+                    <i class="fab fa-css3-alt text-5xl text-blue-500 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white">CSS3</h3>
+                </div>
+                <div class="skill-card bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl hover:scale-105 transform transition-all duration-300 ease-in-out reveal-item delay-4">
+                    <i class="fab fa-js-square text-5xl text-yellow-500 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white">JavaScript</h3>
+                </div>
+                <div class="skill-card bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl hover:scale-105 transform transition-all duration-300 ease-in-out reveal-item delay-5">
+                    <i class="fab fa-react text-5xl text-blue-400 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white">React.js</h3>
+                </div>
+                <div class="skill-card bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl hover:scale-105 transform transition-all duration-300 ease-in-out reveal-item delay-6">
+                    <i class="fas fa-wind text-5xl text-teal-400 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white">Tailwind CSS</h3>
+                </div>
+                <div class="skill-card bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl hover:scale-105 transform transition-all duration-300 ease-in-out reveal-item delay-1">
+                    <i class="fab fa-bootstrap text-5xl text-purple-500 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white">Bootstrap</h3>
+                </div>
+                <div class="skill-card bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl hover:scale-105 transform transition-all duration-300 ease-in-out reveal-item delay-2">
+                    <i class="fas fa-code-branch text-5xl text-red-500 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white">Redux</h3>
+                </div>
+                <div class="skill-card bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl hover:scale-105 transform transition-all duration-300 ease-in-out reveal-item delay-3">
+                    <i class="fab fa-github text-5xl text-gray-400 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white">GitHub</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="section-padding bg-gray-800 text-gray-200">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <h2 class="text-4xl font-bold text-center text-purple-400 mb-12 reveal-item">My Projects</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <!-- Shunyaekai -->
+                <div class="project-card relative reveal-item delay-1">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://i.ibb.co/zWxYwSJg/shunyaekai.png" alt="Shunyaekai" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">Shunyaekai</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Fully responsive static website.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">HTML</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">CSS</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">JavaScript</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">Shunyaekai</h3>
+                            <p class="text-center mb-6 text-gray-300">Designed and developed a fully responsive static website using HTML, CSS, and JavaScript.</p>
+                            <div class="flex justify-center">
+                                <a href="https://shunyaekai.tech/" target="_blank" class="px-5 py-2 bg-purple-500 hover:bg-purple-600 rounded-full font-semibold transition-colors duration-300"><i class="fas fa-external-link-alt mr-2"></i>Live Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Ridez -->
+                <div class="project-card relative reveal-item delay-2">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://i.ibb.co/G41L4SwN/ridez.png" alt="Ridez" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">Ridez</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Fully responsive static website.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">HTML</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">CSS</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">JavaScript</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">Ridez</h3>
+                            <p class="text-center mb-6 text-gray-300">Designed and developed a fully responsive static website using HTML, CSS, and JavaScript.</p>
+                            <div class="flex justify-center">
+                                <a href="https://ridez.tech/" target="_blank" class="px-5 py-2 bg-purple-500 hover:bg-purple-600 rounded-full font-semibold transition-colors duration-300"><i class="fas fa-external-link-alt mr-2"></i>Live Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Ahlan Modi -->
+                <div class="project-card relative reveal-item delay-3">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://i.ibb.co/FbFXDY7c/allahnmodi.png" alt="Ahlan Modi" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">Ahlan Modi</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Fully responsive static website.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">HTML</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">CSS</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">JavaScript</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">Ahlan Modi</h3>
+                            <p class="text-center mb-6 text-gray-300">Designed and developed a fully responsive static website using HTML, CSS, and JavaScript.</p>
+                            <div class="flex justify-center">
+                                <a href="https://www.ahlanmodi.ae/" target="_blank" class="px-5 py-2 bg-purple-500 hover:bg-purple-600 rounded-full font-semibold transition-colors duration-300"><i class="fas fa-external-link-alt mr-2"></i>Live Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- PlusX Electric -->
+                <div class="project-card relative reveal-item delay-1">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://i.ibb.co/fdWS77DW/plusx.png" alt="PlusX Electric" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">PlusX Electric</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Dynamic website and admin panel with seamless backend integration.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">React.js</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Tailwind CSS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">PlusX Electric</h3>
+                            <p class="text-center mb-6 text-gray-300">Built a responsive frontend and admin panel for content management.</p>
+                            <div class="flex justify-center">
+                                <a href="https://plusxelectric.com/" target="_blank" class="px-5 py-2 bg-purple-500 hover:bg-purple-600 rounded-full font-semibold transition-colors duration-300"><i class="fas fa-external-link-alt mr-2"></i>Live Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Medhub Global -->
+               
+                <!-- IPF Startup Hub -->
+                <div class="project-card relative reveal-item delay-3">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://i.ibb.co/8nwDpCLX/ipstartup.png" alt="IPF Startup Hub" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">IPF Startup Hub</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Modern UI/UX with dynamic data rendering.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">React.js</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Tailwind CSS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">IPF Startup Hub</h3>
+                            <p class="text-center mb-6 text-gray-300">Collaborated with backend for dynamic content delivery.</p>
+                            <div class="flex justify-center">
+                                <a href="https://www.ipfstartuphub.com/" target="_blank" class="px-5 py-2 bg-purple-500 hover:bg-purple-600 rounded-full font-semibold transition-colors duration-300"><i class="fas fa-external-link-alt mr-2"></i>Live Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- IPF Yuva -->
+                <div class="project-card relative reveal-item delay-1">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://i.ibb.co/PzNN40Jz/ipfyuva.png" alt="IPF Yuva" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">IPF Yuva</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Modern UI/UX with dynamic data rendering.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">React.js</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Tailwind CSS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">IPF Yuva</h3>
+                            <p class="text-center mb-6 text-gray-300">Collaborated with backend for dynamic content delivery.</p>
+                            <div class="flex justify-center">
+                                <a href="https://ipfyuva.org/" target="_blank" class="px-5 py-2 bg-purple-500 hover:bg-purple-600 rounded-full font-semibold transition-colors duration-300"><i class="fas fa-external-link-alt mr-2"></i>Live Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                  <!-- Pamporegin -->
+                  <div class="project-card relative reveal-item delay-3">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://i.ibb.co/j9t79vS6/pamporegin.png" alt="Pamporegin" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">Pamporegin</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Clean, responsive website tailored to business branding.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">HTML</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">JavaScript</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Next.js</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Tailwind CSS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">Pamporegin</h3>
+                            <p class="text-center mb-6 text-gray-300">Developed a clean, responsive website using HTML, JavaScript, Next.js, and Tailwind CSS tailored to business branding and usability.</p>
+                            <div class="flex justify-center">
+                                <a href="https://pamporegin.com/" target="_blank" class="px-5 py-2 bg-purple-500 hover:bg-purple-600 rounded-full font-semibold transition-colors duration-300"><i class="fas fa-external-link-alt mr-2"></i>Live Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- C&G Seals -->
+                <div class="project-card relative reveal-item delay-1">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://i.ibb.co/xx5kYT5/cgseals.png" alt="C&G Seals" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">C&G Seals</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Clean, responsive website tailored to business branding.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">HTML</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">JavaScript</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Next.js</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Tailwind CSS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">C&G Seals</h3>
+                            <p class="text-center mb-6 text-gray-300">Developed a clean, responsive website using HTML, JavaScript, Next.js, and Tailwind CSS tailored to business branding and usability.</p>
+                            <div class="flex justify-center">
+                                <a href="https://site.cgsealsindia.com/" target="_blank" class="px-5 py-2 bg-purple-500 hover:bg-purple-600 rounded-full font-semibold transition-colors duration-300"><i class="fas fa-external-link-alt mr-2"></i>Live Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Meter Billing Admin Panel -->
+                <div class="project-card relative reveal-item delay-2">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://i.ibb.co/Dg4C7Qn0/meterbilling.png" alt="Meter Billing Admin Panel" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">Meter Billing Admin Panel</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Scalable admin interface with state management.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">React.js</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Tailwind CSS</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Redux</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">Meter Billing Admin Panel</h3>
+                            <p class="text-center mb-6 text-gray-300">Created a scalable admin interface using React.js, Tailwind CSS, and Redux for state management.</p>
+                            <div class="flex justify-center">
+                                <a href="https://meterbilling.shunyaekai.com/" target="_blank" class="px-5 py-2 bg-purple-500 hover:bg-purple-600 rounded-full font-semibold transition-colors duration-300"><i class="fas fa-external-link-alt mr-2"></i>Live Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card relative reveal-item delay-2">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://i.ibb.co/TML1sg1z/Screenshot-2025-06-19-at-9-24-44-AM.png" alt="Medhub Global" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">Medhub Global</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Responsive website and admin panel with performance optimization.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">HTML</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">React.js</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Tailwind CSS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">Medhub Global</h3>
+                            <p class="text-center mb-6 text-gray-300">Developed a mobile-responsive website and admin panel.</p>
+                            <div class="flex justify-center">
+                                <a href="https://medhub.global/" target="_blank" class="px-5 py-2 bg-purple-500 hover:bg-purple-600 rounded-full font-semibold transition-colors duration-300"><i class="fas fa-external-link-alt mr-2"></i>Live Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Levmon Admin Panel -->
+                <div class="project-card relative reveal-item delay-3">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://placehold.co/600x200/c084fc/ffffff?text=Levmon" alt="Levmon Admin Panel" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">Levmon Admin Panel</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Internal tool for efficient data handling.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">React.js</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Tailwind CSS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">Levmon Admin Panel</h3>
+                            <p class="text-center mb-6 text-gray-300">Developed an internal admin dashboard for efficient data handling.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- ENV Admin Panel -->
+                <div class="project-card relative reveal-item delay-1">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://placehold.co/600x200/312e81/ffffff?text=ENV" alt="ENV Admin Panel" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">ENV Admin Panel</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Internal tool for efficient data handling.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">React.js</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Tailwind CSS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">ENV Admin Panel</h3>
+                            <p class="text-center mb-6 text-gray-300">Developed an internal admin dashboard for efficient data handling.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Laptop Tracker Admin Panel -->
+                <div class="project-card relative reveal-item delay-2">
+                    <div class="project-card-inner">
+                        <div class="project-card-front">
+                            <img src="https://placehold.co/600x200/8b5cf6/ffffff?text=Laptop+Tracker" alt="Laptop Tracker Admin Panel" class="w-full h-48 object-cover rounded-t-xl">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">Laptop Tracker Admin Panel</h3>
+                                <p class="text-gray-300 mb-4 text-sm">Internal tool for efficient data handling.</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">React.js</span>
+                                    <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">Tailwind CSS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card-back">
+                            <h3 class="text-2xl font-bold mb-4">Laptop Tracker Admin Panel</h3>
+                            <p class="text-center mb-6 text-gray-300">Developed an internal admin dashboard for efficient data handling.</p>
+                        </div>
+                    </div>
+                </div>
+              
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section id="experience" class="section-padding bg-gray-900 text-gray-200">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <h2 class="text-4xl font-bold text-center text-purple-400 mb-12 reveal-item">Experience</h2>
+            <div class="relative">
+                <div class="timeline-item reveal-item delay-1">
+                    <h3 class="text-2xl font-semibold text-white">Frontend Developer - Shunya Ekai Technologies</h3>
+                    <p class="text-gray-400 text-sm mb-2">Jan 2022 - Present, Gurugram</p>
+                    <ul class="list-disc list-inside text-gray-300 ml-4">
+                        <li>Designed and developed responsive websites using HTML5, CSS3, JavaScript, React.js, and Tailwind CSS.</li>
+                        <li>Built SEO-friendly landing pages with clean, maintainable code.</li>
+                        <li>Created dynamic admin dashboards integrated with RESTful APIs for real-time data updates.</li>
+                        <li>Collaborated with UI/UX designers and backend developers to convert wireframes into functional components.</li>
+                        <li>Conducted manual testing to ensure cross-browser compatibility and performance.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section-padding bg-gray-900 text-gray-200">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-purple-400 mb-12 reveal-item">Get In Touch</h2>
+            <div class="contact-container reveal-item delay-1">
+                <h3 class="text-xl font-semibold text-white mb-6 text-center">Contact Information</h3>
+                <p class="text-gray-400 mb-8 text-center">Feel free to reach out to me directly!</p>
+                <div class="space-y-6 contact-info">
+                    <div class="flex items-center justify-center">
+                        <i class="fas fa-envelope text-2xl mr-3"></i>
+                        <a href="mailto:shivanshitripshi@gmail.com" class="text-gray-300 text-lg">shivanshitripshi8@gmail.com</a>
+                    </div>
+                    <!-- <div class="flex items-center justify-center">
+                        <i class="fas fa-phone text-2xl mr-3"></i>
+                        <a href="tel:+918234567890" class="text-gray-300 text-lg">+91 8234567890</a>
+                    </div> -->
+                    <div class="flex items-center justify-center">
+                        <i class="fab fa-linkedin text-2xl mr-3"></i>
+                        <a href="https://linkedin.com/in/shivanshi-tripathi-b0b642180" target="_blank" class="text-gray-300 text-lg">LinkedIn Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-8 text-gray-400 text-center relative rounded-t-xl">
+        <div class="container mx-auto px-6">
+            <button id="scroll-to-top" class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-all duration-300">
+                <i class="fas fa-arrow-up text-xl"></i>
+            </button>
+            <div class="mb-4">
+                <svg viewBox="0 0 200 50" class="w-48 h-12 mx-auto signature-svg text-purple-400">
+                    <path d="M10 30 C 40 10, 80 10, 100 30 S 160 50, 190 30" />
+                    <text x="70" y="38" font-family="Inter" font-size="16" fill="currentColor" text-anchor="middle">ST</text>
+                </svg>
+            </div>
+            <p>© 2025 Shivanshi Tripathi. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dark Mode Toggle (Desktop)
+            const darkModeToggleDesktop = document.getElementById('dark-mode-toggle');
+            // Dark Mode Toggle (Mobile)
+            const darkModeToggleMobile = document.getElementById('dark-mode-toggle-mobile');
+            const body = document.body;
+
+            // Function to set theme
+            const setTheme = (theme) => {
+                if (theme === 'dark') {
+                    body.classList.remove('light');
+                    body.classList.add('dark');
+                } else {
+                    body.classList.remove('dark');
+                    body.classList.add('light');
+                }
+                localStorage.setItem('theme', theme);
+            };
+
+            // Load saved theme preference or default to dark
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else {
+                setTheme('dark');
+            }
+
+            // Event listeners for dark mode toggles
+            darkModeToggleDesktop.addEventListener('click', () => {
+                setTheme(body.classList.contains('dark') ? 'light' : 'dark');
+            });
+            darkModeToggleMobile.addEventListener('click', () => {
+                setTheme(body.classList.contains('dark') ? 'light' : 'dark');
+            });
+
+            // Mobile Navigation Toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const closeMobileMenuButton = document.getElementById('close-mobile-menu');
+            const mobileMenuLinks = document.querySelectorAll('#mobile-menu a');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.add('active');
+            });
+
+            closeMobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+            });
+
+            mobileMenuLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    mobileMenu.classList.remove('active');
+                    const targetId = e.target.getAttribute('href');
+                    document.querySelector(targetId).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Smooth Scroll for Desktop Navigation
+            document.querySelectorAll('nav ul.hidden.md\\:flex a').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Scroll-to-top button
+            const scrollToTopBtn = document.getElementById('scroll-to-top');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    scrollToTopBtn.classList.remove('-translate-y-1/2');
+                    scrollToTopBtn.classList.add('translate-y-0');
+                    scrollToTopBtn.style.opacity = '1';
+                } else {
+                    scrollToTopBtn.classList.remove('translate-y-0');
+                    scrollToTopBtn.classList.add('-translate-y-1/2');
+                    scrollToTopBtn.style.opacity = '0';
+                }
+            });
+
+            scrollToTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+
+            // Intersection Observer for scroll reveal animations
+            const revealItems = document.querySelectorAll('.reveal-item');
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            revealItems.forEach(item => {
+                observer.observe(item);
+            });
+
+            // Cursor Trail Effect (hidden on small screens)
+            const cursorDot = document.querySelector('.cursor-dot');
+            if (cursorDot) {
+                document.addEventListener('mousemove', (e) => {
+                    cursorDot.style.left = e.clientX + 'px';
+                    cursorDot.style.top = e.clientY + 'px';
+                });
+            }
+
+            /* --- Three.js for Hero Section --- */
+            function initHeroThreeJS() {
+                const container = document.getElementById('hero-three-container');
+                if (!container) return;
+
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                container.appendChild(renderer.domElement);
+
+                const pointLight = new THREE.PointLight(0x8855FF, 1);
+                pointLight.position.set(0, 0, 5);
+                scene.add(pointLight);
+                const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+                scene.add(ambientLight);
+
+                const cubeGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+                const createTexture = (text, color) => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 128;
+                    canvas.height = 128;
+                    const context = canvas.getContext('2d');
+                    context.fillStyle = color;
+                    context.fillRect(0, 0, canvas.width, canvas.height);
+                    context.font = 'bold 60px Arial';
+                    context.fillStyle = '#ffffff';
+                    context.textAlign = 'center';
+                    context.textBaseline = 'middle';
+                    context.fillText(text, canvas.width / 2, canvas.height / 2);
+                    return new THREE.CanvasTexture(canvas);
+                };
+
+                const cubeMaterials = [
+                    new THREE.MeshStandardMaterial({ map: createTexture('ST', '#6B46C1') }),
+                    new THREE.MeshStandardMaterial({ map: createTexture('S', '#805AD5') }),
+                    new THREE.MeshStandardMaterial({ map: createTexture('T', '#D6BCFA') }),
+                    new THREE.MeshStandardMaterial({ map: createTexture('ST', '#6B46C1') }),
+                    new THREE.MeshStandardMaterial({ map: createTexture('S', '#805AD5') }),
+                    new THREE.MeshStandardMaterial({ map: createTexture('T', '#D6BCFA') })
+                ];
+                const cube = new THREE.Mesh(cubeGeometry, cubeMaterials);
+                cube.position.z = -10;
+                scene.add(cube);
+
+                const particleCount = 1500;
+                const particles = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                const colors = new Float32Array(particleCount * 3);
+                const particleSizeBase = 0.05;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const x = (Math.random() - 0.5) * 50;
+                    const y = (Math.random() - 0.5) * 50;
+                    const z = (Math.random() - 0.5) * 50 - 25;
+
+                    positions[i * 3] = x;
+                    positions[i * 3 + 1] = y;
+                    positions[i * 3 + 2] = z;
+
+                    colors[i * 3] = 1;
+                    colors[i * 3 + 1] = 1;
+                    colors[i * 3 + 2] = 1;
+                }
+
+                particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                particles.usage = THREE.DynamicDrawUsage;
+
+                const particleMaterial = new THREE.PointsMaterial({
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.8,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: true,
+                    size: particleSizeBase
+                });
+
+                const particleSystem = new THREE.Points(particles, particleMaterial);
+                scene.add(particleSystem);
+
+                const maxParticleDistance = 4;
+                const lineGeometry = new THREE.BufferGeometry();
+                const linePositions = new Float32Array(particleCount * 3 * 2);
+                lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+                lineGeometry.usage = THREE.DynamicDrawUsage;
+
+                const lineMaterial = new THREE.LineBasicMaterial({
+                    color: 0x805ad5,
+                    transparent: true,
+                    opacity: 0.2
+                });
+                const lineSegments = new THREE.LineSegments(lineGeometry, lineMaterial);
+                scene.add(lineSegments);
+
+                camera.position.z = 5;
+
+                let mouseX = 0;
+                let mouseY = 0;
+                document.addEventListener('mousemove', (event) => {
+                    mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                    mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+                });
+
+                const clock = new THREE.Clock();
+
+                function animateHero() {
+                    requestAnimationFrame(animateHero);
+
+                    const delta = clock.getDelta();
+                    const elapsedTime = clock.getElapsedTime();
+
+                    cube.rotation.x += 0.005;
+                    cube.rotation.y += 0.005;
+                    cube.position.y = Math.sin(elapsedTime * 0.5) * 0.2;
+                    cube.position.x = Math.cos(elapsedTime * 0.3) * 0.2;
+
+                    const pPositions = particles.attributes.position.array;
+                    let lineIndex = 0;
+
+                    for (let i = 0; i < particleCount; i++) {
+                        pPositions[i * 3] += (Math.random() - 0.5) * 0.02 * delta * 60;
+                        pPositions[i * 3 + 1] += (Math.random() - 0.5) * 0.02 * delta * 60;
+                        pPositions[i * 3 + 2] += (Math.random() - 0.5) * 0.02 * delta * 60;
+
+                        if (pPositions[i * 3] > 25) pPositions[i * 3] = -25;
+                        if (pPositions[i * 3] < -25) pPositions[i * 3] = 25;
+                        if (pPositions[i * 3 + 1] > 25) pPositions[i * 3 + 1] = -25;
+                        if (pPositions[i * 3 + 1] < -25) pPositions[i * 3 + 1] = 25;
+                        if (pPositions[i * 3 + 2] > 0) pPositions[i * 3 + 2] = -50;
+                        if (pPositions[i * 3 + 2] < -50) pPositions[i * 3 + 2] = 0;
+
+                        particleSystem.position.x += (mouseX * 0.05 - particleSystem.position.x) * 0.05;
+                        particleSystem.position.y += (mouseY * 0.05 - particleSystem.position.y) * 0.05;
+
+                        for (let j = i + 1; j < particleCount; j++) {
+                            const dx = pPositions[i * 3] - pPositions[j * 3];
+                            const dy = pPositions[i * 3 + 1] - pPositions[j * 3 + 1];
+                            const dz = pPositions[i * 3 + 2] - pPositions[j * 3 + 2];
+                            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                            if (distance < maxParticleDistance) {
+                                linePositions[lineIndex++] = pPositions[i * 3];
+                                linePositions[lineIndex++] = pPositions[i * 3 + 1];
+                                linePositions[lineIndex++] = pPositions[i * 3 + 2];
+
+                                linePositions[lineIndex++] = pPositions[j * 3];
+                                linePositions[lineIndex++] = pPositions[j * 3 + 1];
+                                linePositions[lineIndex++] = pPositions[j * 3 + 2];
+                            }
+                        }
+                    }
+
+                    for (let i = lineIndex; i < linePositions.length; i++) {
+                        linePositions[i] = 0;
+                    }
+
+                    particles.attributes.position.needsUpdate = true;
+                    lineGeometry.attributes.position.needsUpdate = true;
+                    lineGeometry.setDrawRange(0, lineIndex / 3);
+
+                    renderer.render(scene, camera);
+                }
+
+                animateHero();
+
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+
+            /* --- Three.js for Skills Section --- */
+            function initSkillsThreeJS() {
+                const container = document.getElementById('skills-three-container');
+                if (!container) return;
+
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                container.appendChild(renderer.domElement);
+
+                const pointLight = new THREE.PointLight(0xffffff, 1.5);
+                pointLight.position.set(5, 5, 5);
+                scene.add(pointLight);
+                scene.add(new THREE.AmbientLight(0x404040, 1));
+
+                const skillSpheres = [];
+                const skillColors = [
+                    0xff6347, 0x4682b4, 0xdaa520, 0x6a5acd,
+                    0x20b2aa, 0x9370db, 0xb22222, 0x808080
+                ];
+
+                for (let i = 0; i < 20; i++) {
+                    const geometry = new THREE.SphereGeometry(0.3 + Math.random() * 0.4, 32, 32);
+                    const material = new THREE.MeshStandardMaterial({
+                        color: skillColors[Math.floor(Math.random() * skillColors.length)],
+                        roughness: 0.5,
+                        metalness: 0.5,
+                        emissive: skillColors[Math.floor(Math.random() * skillColors.length)],
+                        emissiveIntensity: 0.3 + Math.random() * 0.5
+                    });
+                    const sphere = new THREE.Mesh(geometry, material);
+
+                    const initialX = (Math.random() - 0.5) * 15;
+                    const initialY = (Math.random() - 0.5) * 10;
+                    const initialZ = (Math.random() - 0.5) * 10;
+                    const phaseX = Math.random() * Math.PI * 2;
+                    const phaseY = Math.random() * Math.PI * 2;
+                    const phaseZ = Math.random() * Math.PI * 2;
+                    const speedMultiplier = 0.005 + Math.random() * 0.005;
+
+                    sphere.position.set(initialX, initialY, initialZ);
+
+                    skillSpheres.push({
+                        mesh: sphere,
+                        initialX, initialY, initialZ,
+                        phaseX, phaseY, phaseZ,
+                        speedMultiplier,
+                        rotationSpeed: (Math.random() - 0.5) * 0.01
+                    });
+                    scene.add(sphere);
+                }
+
+                camera.position.z = 8;
+
+                function animateSkills() {
+                    requestAnimationFrame(animateSkills);
+
+                    skillSpheres.forEach((s, index) => {
+                        s.mesh.position.x = s.initialX + Math.sin(performance.now() * s.speedMultiplier + s.phaseX) * 0.5;
+                        s.mesh.position.y = s.initialY + Math.cos(performance.now() * s.speedMultiplier + s.phaseY) * 0.7;
+                        s.mesh.position.z = s.initialZ + Math.sin(performance.now() * s.speedMultiplier * 0.8 + s.phaseZ) * 0.3;
+
+                        s.mesh.rotation.x += s.rotationSpeed;
+                        s.mesh.rotation.y += s.rotationSpeed;
+                    });
+
+                    renderer.render(scene, camera);
+                }
+                animateSkills();
+
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+
+            initHeroThreeJS();
+            initSkillsThreeJS();
+        });
+    </script>
+</body>
+</html>
